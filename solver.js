@@ -33,22 +33,23 @@ var startingStateExample = {
         ["_","_","_","_","_","Q"],
         ["_","_","_","_","_","Q"]
       ],
-  fScore: 0
+  fScore: 0,
+  parent: 0
 };
 
 
 
 //Goal state, * can match anything, X is at the exit position
-var goalState = [
-["*","*","*","*","*","*"],
-["*","*","*","*","*","*"],
-["*","*","*","*","X","X"],
-["*","*","*","*","*","*"],
-["*","*","*","*","*","*"],
-["*","*","*","*","*","*"]
-];
+// var goalState = [
+// ["*","*","*","*","*","*"],
+// ["*","*","*","*","*","*"],
+// ["*","*","*","*","X","X"],
+// ["*","*","*","*","*","*"],
+// ["*","*","*","*","*","*"],
+// ["*","*","*","*","*","*"]
+// ];
 
-function search(startState, goalState) {
+function search(startState) {
 
   var closedList = [];
   var openList = [startState];
@@ -64,7 +65,8 @@ function search(startState, goalState) {
   // console.log("f score: "+ fScore);
   // startState.f = fScore;
 
-
+  var success = false;
+  var numberOfMoves = 0;
   while (openList.length != 0) {
     //Find state with lowest f on open list and remove it from openlist
     var lowestFState = openList.splice(findLowestFState(openList).index,1)[0];
@@ -75,15 +77,63 @@ function search(startState, goalState) {
     //generateSuccessors function returns an array of successor states
     var successors = generateSuccessors(lowestFState.grid);
     console.log(successors);
-    break;
 
+    //For all successors
+    for (var i=0; i<successors.length; i++) {
+
+      var successorState = successors[i].newState;
+
+      //Chcek if goal state is reached
+      if (goalReached(successorState)) {
+        console.log("GOAL REACHED");
+        success = true;
+        break;
+      }
+
+      //Otherwise calculate cost function //****** CHECK CALCULATION OF G SCORE ******
+      var successorG = numberOfMoves+1;
+      var successorH = calculateH(successorState);
+      var successorF = successorG + successorH;
+
+
+
+      //Check to see if a state exists in the open list that is the same as this state with lower f
+      //If so skip and DO NOT ADD
+
+
+      //Check to see if a state exists in the closed list that is the same as this state with a lower f
+      //If so skip and DO NOT ADD
+
+      //Otherwise, add the successor to the open list
+      var successorObj = {grid: successorState, parent: successors[i].parent, fScore: successorF };
+      console.log(successorObj);
+
+    }
+
+    //Add current state to closed list
+    closedList.push(lowestFState);
+
+    numberOfMoves++;
   }
-
-
-
+  if (success) {
+    console.log("Finished.");
+    console.log("Closed list");
+    console.log(closedList);
+  } else {
+    console.log("No solution found");
+  }
 }
 
 
+function goalReached(successorState) {
+  //Check if this state is the goal state
+  //If finished, X should be in positions [2,4] and [2,5]
+  if ((successorState[2][4] == "X") && (successorState[2][5] == "X")) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 
 function generateSuccessors(currentState) {
@@ -135,7 +185,7 @@ function generateSuccessors(currentState) {
         newLeftState[rightMostRowCoord][rightMostColCoord] = "_";
 
         //Add state to list of successor states
-        successorStates.push(newLeftState);     
+        successorStates.push({newState: newLeftState, parent: currentState});     
       }
 
       //If possible to go right from here
@@ -148,7 +198,7 @@ function generateSuccessors(currentState) {
         newRightState[leftMostRowCoord][leftMostColCoord] = "_";
 
         //Add state to list of successor states
-        successorStates.push(newRightState);
+        successorStates.push({newState: newRightState, parent: currentState});
       }
     } else {
       //Look above and below
@@ -170,7 +220,7 @@ function generateSuccessors(currentState) {
         newUpState[bottomMostRowCoord][bottomMostColCoord] = "_";
 
         //Add state to list of successor states
-        successorStates.push(newUpState);
+        successorStates.push({newState: newUpState, parent: currentState});
       }
 
       //if possible to go down from here
@@ -183,7 +233,7 @@ function generateSuccessors(currentState) {
         newDownState[topMostRowCoord][topMostColCoord] = "_";
 
         //Add state to list of successor states
-        successorStates.push(newDownState);
+        successorStates.push({newState: newDownState, parent: currentState});
       }
     }
   }
@@ -277,7 +327,7 @@ function findLowestFState(openList) {
   return {state: lowestState, index: lowestIndex};
 }
 
-function calculateH(current, goal) {
+function calculateH(current) {
   //Calculate distance between red car currently and goal state
   
   //Iterate over red car row to find position of X
@@ -325,4 +375,4 @@ function getVehicleLength(vehicleId) {
   }
 }
 
-search(startingStateExample,goalState);
+search(startingStateExample);
