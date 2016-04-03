@@ -1,0 +1,15 @@
+{
+  "name": "rush-hour",
+  "version": "0.0.1",
+  "description": "A nodejs rush hour solver",
+  "scripts": {
+    "start": "node solver.js"
+  },
+  "dependencies": {
+    "deepcopy":"0.6.1"
+  },
+  "repository": {},
+  "engines": {
+    "node": ">=0.10.x"
+  }
+}
