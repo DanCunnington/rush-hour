@@ -28,12 +28,13 @@ var startingStateExample = {
   grid:[
         ["_","_","O","_","A","A"],
         ["_","_","O","_","_","_"],
-        ["X","X","O","_","_","_"],
-        ["P","P","P","_","_","Q"],
-        ["_","_","_","_","_","Q"],
-        ["_","_","_","_","_","Q"]
+        ["_","_","X","X","_","_"],
+        ["_","_","_","_","_","_"],
+        ["_","_","_","_","_","_"],
+        ["_","_","_","_","_","_"]
       ],
   fScore: 0,
+  gScore: 0,
   parent: 0
 };
 
@@ -56,74 +57,84 @@ function search(startState) {
 
   var cameFrom = [];
 
-  // var gScore = 0;
-  // var hScore = calculateH(startState.grid,goalState);
-  // var fScore = gScore + hScore;
-
-
-
-  // console.log("f score: "+ fScore);
-  // startState.f = fScore;
-
-  var success = false;
-  var numberOfMoves = 0;
   while (openList.length != 0) {
+    
     //Find state with lowest f on open list and remove it from openlist
     var lowestFState = openList.splice(findLowestFState(openList).index,1)[0];
    
-    console.log(lowestFState);
     //Generate successors to the current state 
     //For all vehicles in the current state, look for an empty space in both directions that the vehicle can move
     //generateSuccessors function returns an array of successor states
-    var successors = generateSuccessors(lowestFState.grid);
-    console.log(successors);
+    var successors = generateSuccessors(lowestFState);
 
     //For all successors
     for (var i=0; i<successors.length; i++) {
 
-      var successorState = successors[i].newState;
+      var successorState = successors[i].newState;   
 
       //Chcek if goal state is reached
       if (goalReached(successorState)) {
-        console.log("GOAL REACHED");
-        success = true;
-        break;
+        console.log("goal");
+        return reconstructPath(successors[i]);
       }
 
-      //Otherwise calculate cost function //****** CHECK CALCULATION OF G SCORE ******
-      var successorG = numberOfMoves+1;
+      //Otherwise calculate cost function //****** CHECK CALCULATION OF G AND H SCORE ******
+      var successorG = lowestFState.gScore + 1;
       var successorH = calculateH(successorState);
       var successorF = successorG + successorH;
 
-
+      var successorObj = {grid: successorState, parent: successors[i].parent, fScore: successorF, gScore: successorG };
 
       //Check to see if a state exists in the open list that is the same as this state with lower f
       //If so skip and DO NOT ADD
-
-
       //Check to see if a state exists in the closed list that is the same as this state with a lower f
       //If so skip and DO NOT ADD
 
+      if (checkForExistenceAndLowerF(successorObj, openList) || checkForExistenceAndLowerF(successorObj,closedList)) {
+        continue;
+      }
+
       //Otherwise, add the successor to the open list
-      var successorObj = {grid: successorState, parent: successors[i].parent, fScore: successorF };
-      console.log(successorObj);
+      //****************************************** UNCOMMENT THE FOLLOWING LINE TO MAKE THE LOOP GO
+    
+      openList.push(successorObj);
 
     }
 
     //Add current state to closed list
     closedList.push(lowestFState);
-
-    numberOfMoves++;
   }
-  if (success) {
-    console.log("Finished.");
-    console.log("Closed list");
-    console.log(closedList);
-  } else {
-    console.log("No solution found");
-  }
+  return failure();
 }
 
+function reconstructPath(current) {
+  current.grid = current.newState;
+  var totalPath = [current];
+
+  //Follow parent links
+  navigateUpParentTree(current);
+
+  function navigateUpParentTree(current) {
+    if ("parent" in current && current.parent != 0) {
+      totalPath.push(current.parent);
+      navigateUpParentTree(current.parent);
+    } else {
+
+      //Finished
+      console.log("Finished, path to goal is (in reverse order): ");
+      for (var i=0; i<totalPath.length; i++) {
+        console.log(totalPath[i].grid);
+        console.log("-------------------");
+      }
+      return;
+    }
+  }
+
+}
+
+function failure() {
+  console.log("No solution found");
+}
 
 function goalReached(successorState) {
   //Check if this state is the goal state
@@ -135,25 +146,57 @@ function goalReached(successorState) {
   }
 }
 
+function checkForExistenceAndLowerF(state,list) {
+
+  //if the given state exists in the list AND has a lower f
+  //check if state exists
+  if (!state || list.length == 0) {
+    return false;
+  }
+  var match = true;
+  var stateGrid = state.grid;
+  loop1:
+    for (var i=0; i<list.length; i++) {
+      var listGrid = list[i].grid;
+  loop2:
+      for (var j=0; j<stateGrid.length; j++) {
+  loop3:
+        for (var k=0; k<stateGrid[j].length; k++) {
+          if (stateGrid[j][k] != listGrid[j][k]) {
+            match = false;
+            break loop1;
+          }
+        }
+      }
+      //list must have lower f, so break if greater than
+      if (list[i].fScore >= state.fScore) {
+        match = false;
+      }
+      break loop1;
+    }
+  return match;
+}
+
 
 function generateSuccessors(currentState) {
+  var currentStateGrid = currentState.grid;
 
   var successorStates = [];
 
   //Find all vehicles on the grid
   var vehicles = [];
   //search each row then column of current state for a vehicle id
-  for (var i=0; i<currentState.length; i++) {
-    for (var j=0; j<currentState[i].length; j++) {
+  for (var i=0; i<currentStateGrid.length; i++) {
+    for (var j=0; j<currentStateGrid[i].length; j++) {
       
-      var vehicleId = currentState[i][j];
+      var vehicleId = currentStateGrid[i][j];
       //If we have found a vehicle id
       if (vehicleId != "_") {
 
         //Find the whole vehicle
         var vehicleLength = getVehicleLength(vehicleId);
 
-        var vehicle = findVehicle(vehicleId,i,j,vehicleLength,currentState);
+        var vehicle = findVehicle(vehicleId,i,j,vehicleLength,currentStateGrid);
         if (vehicle) {
           vehicles.push(vehicle);
         }     
@@ -176,9 +219,9 @@ function generateSuccessors(currentState) {
 
       //If possible to go left from here
       //if space is on the grid and contains an empty ("_")
-      if ((leftMostColCoord-1 > -1) && (leftMostColCoord-1 < GRID_LENGTH) && (currentState[leftMostRowCoord][leftMostColCoord-1] == "_")) {
+      if ((leftMostColCoord-1 > -1) && (leftMostColCoord-1 < GRID_LENGTH) && (currentStateGrid[leftMostRowCoord][leftMostColCoord-1] == "_")) {
         //Build state with this vehicle in this position 
-        var newLeftState = deepcopy(currentState);
+        var newLeftState = deepcopy(currentStateGrid);
 
         //Set new left position to new id and set old right most position to blank
         newLeftState[leftMostRowCoord][leftMostColCoord-1] = vehicle.id;
@@ -189,9 +232,9 @@ function generateSuccessors(currentState) {
       }
 
       //If possible to go right from here
-      if ((rightMostColCoord+1 > -1) && (rightMostColCoord+1 < GRID_LENGTH) && (currentState[rightMostRowCoord][rightMostColCoord+1] == "_")) {
+      if ((rightMostColCoord+1 > -1) && (rightMostColCoord+1 < GRID_LENGTH) && (currentStateGrid[rightMostRowCoord][rightMostColCoord+1] == "_")) {
         //Build state with this vehicle in this position 
-        var newRightState = deepcopy(currentState);
+        var newRightState = deepcopy(currentStateGrid);
 
         //Set new right position to new id and set old left most position to blank
         newRightState[rightMostRowCoord][rightMostColCoord+1] = vehicle.id;
@@ -211,9 +254,9 @@ function generateSuccessors(currentState) {
 
       //If possible to go up from here
       //if space is on the grid and contains an empty ("_")
-      if ((topMostRowCoord-1 > -1) && (topMostRowCoord-1 < GRID_LENGTH) && (currentState[topMostRowCoord-1][topMostColCoord] == "_")) {
+      if ((topMostRowCoord-1 > -1) && (topMostRowCoord-1 < GRID_LENGTH) && (currentStateGrid[topMostRowCoord-1][topMostColCoord] == "_")) {
         //Build state with this vehicle in this position 
-        var newUpState = deepcopy(currentState);
+        var newUpState = deepcopy(currentStateGrid);
 
         //Set new up position to new id and set old bottom most position to blank
         newUpState[topMostRowCoord-1][topMostColCoord] = vehicle.id;
@@ -224,9 +267,9 @@ function generateSuccessors(currentState) {
       }
 
       //if possible to go down from here
-      if ((bottomMostRowCoord+1 > -1) && (bottomMostRowCoord+1 < GRID_LENGTH) && (currentState[bottomMostRowCoord+1][bottomMostColCoord] == "_")) {
+      if ((bottomMostRowCoord+1 > -1) && (bottomMostRowCoord+1 < GRID_LENGTH) && (currentStateGrid[bottomMostRowCoord+1][bottomMostColCoord] == "_")) {
         //Build state with this vehicle in this position 
-        var newDownState = deepcopy(currentState);
+        var newDownState = deepcopy(currentStateGrid);
 
         //Set new down position to new id and set old top most position to blank
         newDownState[bottomMostRowCoord+1][bottomMostColCoord] = vehicle.id;
@@ -375,4 +418,57 @@ function getVehicleLength(vehicleId) {
   }
 }
 
+
 search(startingStateExample);
+
+
+
+//TESTING  FUNCTIONS
+//checkExistenceAndLowerFTest();
+
+//TEST CHECKING FOR EXISTENCE AND LOWER F
+function checkExistenceAndLowerFTest() {
+  //Dummy state and list
+  var state = {
+    grid:[
+          ["_","_","O","_","A","A"],
+          ["_","_","O","_","_","_"],
+          ["X","X","O","_","_","_"],
+          ["P","P","P","_","_","Q"],
+          ["_","_","_","_","_","Q"],
+          ["_","_","_","_","_","Q"]
+        ],
+    fScore: 3,
+    parent: 0
+  }
+
+  var stateone = {
+    grid:[
+          ["_","_","O","_","A","A"],
+          ["_","_","O","_","_","_"],
+          ["X","X","O","_","_","_"],
+          ["P","P","P","_","_","Q"],
+          ["_","_","_","_","_","Q"],
+          ["_","_","_","_","_","Q"]
+        ],
+    fScore: 0,
+    parent: 0
+  }
+
+  var statetwo = {
+    grid:[
+          ["_","_","O","_","A","A"],
+          ["_","_","O","_","_","_"],
+          ["X","X","O","_","_","Q"],
+          ["P","P","P","_","_","Q"],
+          ["_","_","_","_","_","Q"],
+          ["_","_","_","_","_","_"]
+        ],
+    fScore: 0,
+    parent: 0
+  }
+
+  var list = [stateone, statetwo];
+
+  console.log(checkForExistenceAndLowerF(state,list));
+}
