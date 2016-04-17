@@ -3,10 +3,19 @@
   "version": "0.0.1",
   "description": "A nodejs rush hour solver",
   "scripts": {
-    "start": "node solver.js"
+    "start": "node app.js"
   },
   "dependencies": {
-    "deepcopy":"0.6.1"
+    "body-parser": "^1.15.0",
+    "cookie-parser": "^1.4.1",
+    "deepcopy": "0.6.1",
+    "ejs": "^2.4.1",
+    "express": "^4.13.4",
+    "favicon": "0.0.2",
+    "faye": "^1.1.2",
+    "morgan": "^1.7.0",
+    "path": "^0.12.7",
+    "serve-favicon": "^2.3.0"
   },
   "repository": {},
   "engines": {

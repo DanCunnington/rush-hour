@@ -1,3 +1,4 @@
+var exports = module.exports = {};
 var deepcopy = require("deepcopy");
 //A* search implementation
 
@@ -13,46 +14,8 @@ var vehicles = [{type: "LORRY", ids:["O","P","Q","R"], length: 3},
                 {type: "CAR", ids:["A","B","C","D","E","F","G","H","I","J","K"], length: 2},
                 {type: "TARGET", ids: ["X"], length: 2}];
 
-//Starting state
-var startingStateExample = {
-  grid:[
-        ["_","_","O","_","A","A"],
-        ["_","_","O","_","_","_"],
-        ["X","X","O","_","_","_"],
-        ["P","P","P","_","_","Q"],
-        ["_","_","_","_","_","Q"],
-        ["_","_","_","_","_","Q"]
-      ],
-      parent: 0
-};
 
-var startingStateExampleTwo = {
-  grid:[
-        ["A","A","O","O","O","B"],
-        ["C","_","D","D","E","B"],
-        ["C","_","X","X","E","F"],
-        ["G","G","H","I","I","F"],
-        ["J","J","H","K","_","_"],
-        ["P","P","P","K","_","_"]
-      ],
-      parent: 0 
-};
-
-var startingStateExampleThree = {
-  grid:[
-        ["A","B","B","O","O","O"],
-        ["A","_","C","C","D","_"],
-        ["X","X","E","_","D","_"],
-        ["F","F","E","G","G","P"],
-        ["_","H","H","I","_","P"],
-        ["Q","Q","Q","I","_","P"]
-      ],
-      parent: 0 
-};
-
-search(startingStateExampleThree);
-
-function search(startState) {
+exports.search = function(startState,callback) {
   var closedSet = [];
   var openSet = [startState];
   var gScore = [{node: startState, score: 0}];
@@ -67,8 +30,8 @@ function search(startState) {
     var currentIndex = current.index;
 
     if (goalReached(currentState)) {
-      console.log("goal");
-      return reconstructPath(current);
+      //console.log("goal");
+      return reconstructPath(current,callback);
     }
 
     //Remove from Openset
@@ -112,7 +75,7 @@ function search(startState) {
         newStateObj.fScoreIndex = fIndex;
     }
   }
-  return failure();
+  return failure(callback);
 }
 
 function successorExistsInSet(state,set) {
@@ -322,25 +285,20 @@ function findVehicle(vehicleId,row,col,vehicleLength,currentState) {
   
 }
 
-function reconstructPath(current) {
+function reconstructPath(current,callback) {
  
   var totalPath = [current.state];;
   //Follow parent links
-  navigateUpParentTree(current.state);
+  navigateUpParentTree(current.state,callback);
 
-  function navigateUpParentTree(current) {
+  function navigateUpParentTree(current,callback) {
     if ("parent" in current && current.parent != 0) {
       totalPath.push(current.parent);
-      navigateUpParentTree(current.parent);
+      navigateUpParentTree(current.parent,callback);
     } else {
       //Finished
-      console.log("Finished, path to goal is: ");
-      totalPath = totalPath.reverse();
-      for (var i=0; i<totalPath.length; i++) {
-        console.log(totalPath[i].grid);
-        console.log("-------------------");
-      }
-      return;
+      //console.log("Finished, path to goal is: ");
+      return callback(totalPath.reverse());
     }
   }
 }
@@ -419,8 +377,8 @@ function getVehicleLength(vehicleId) {
   }
 }
 
-function failure() {
-  console.log("No solution found");
+function failure(callback) {
+  callback({err: "No solution found"});
 }
 
 
