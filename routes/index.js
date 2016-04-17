@@ -10,7 +10,6 @@ var rushhour = require('../utils/solver');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-
 	res.render('index', { title: 'Hursley Hack' });
 });
 
