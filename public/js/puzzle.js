@@ -193,6 +193,7 @@ class Puzzle {
 	solve() {
 		var that = this;
 		$.post('/solve', {'puzzle': JSON.stringify(that.setup)}, function(response) {
+			console.log(response)
 		    var solution = response.solution;
 		    var animations = [];
 
@@ -358,8 +359,8 @@ class Puzzle {
 			var yStart = movements[0].start[1];
 			var yEnd = movements[0].end[1];
 
-			console.log(xStart, yStart);
-			console.log(xEnd, yEnd);
+			// console.log(xStart, yStart);
+			// console.log(xEnd, yEnd);
 
 			var direction;
 			if (xEnd > xStart) { direction = "right"};

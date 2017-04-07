@@ -61,6 +61,7 @@ class Vehicle {
 	}
 
 	//Move a vehicle to new starting position
+	//BUG IN THIS FUNCTION
 	move(direction, amount, callback) {
 		//Check that this is a legal move, e.g. if vehicle has height 1 then it can only move sideways
 		//If vehicle has a width of 1 it can only move up and down
@@ -73,158 +74,21 @@ class Vehicle {
 		if ((direction === 'up' || direction === 'down') && currentPosition.orientation !== 'vertical') {
 			return {err: 'Invalid move. Current position must be vertical to move up or down'};
 		}
-
-		switch (direction) {
-			case 'right':
-				//Calculate right most coordinate between start and end
-				var startX = currentPosition.startX;
-				var endX = currentPosition.endX;
-				var rightMost;
-				var rightMostVal;
-				(startX > endX) ? rightMost = 'start' : rightMost = 'end';
-				(startX > endX) ? rightMostVal = startX : rightMostVal = endX;
-
-				if ((rightMostVal + amount) > (Grid.SIZE+1)) {
-					return {err: 'Invalid right move.'};
-				} else {
-
-					var newPosition = {
-						startX: 0,
-						endX: 0,
-						startY: currentPosition.startY,
-						endY: currentPosition.endY
-					}
-					if (rightMost === 'start') {
-						newPosition.startX = rightMostVal + amount;
-						newPosition.endX = endX + amount;
-					} else {
-						newPosition.endX = rightMostVal + amount;
-						newPosition.startX = startX + amount;
-					}
-					
-
-					//Animate change in class and complete move
-					this.animateMovement(direction, amount, newPosition, callback)
-				}
-				break;
-			case 'left':
-				//Calculate left most coordinate between start and end
-				var startX = currentPosition.startX;
-				var endX = currentPosition.endX;
-				var leftMost;
-				var leftMostVal;
-				(startX < endX) ? leftMost = 'start' : leftMost = 'end';
-				(startX < endX) ? leftMostVal = startX : leftMostVal = endX;
-
-				if ((leftMostVal - amount) < 1) {
-					return {err: 'Invalid left move.'};
-				} else {
-
-
-
-				var newPosition = {
-					startX: 0,
-					endX: 0,
-					startY: currentPosition.startY,
-					endY: currentPosition.endY
-				}
-				if (leftMost === 'start') {
-					newPosition.startX = leftMostVal - amount;
-					newPosition.endX = endX - amount;
-				} else {
-					newPosition.endX = leftMostVal - amount;
-					newPosition.startX = startX - amount;
-				}
-					
-
-				//Animate change in class and complete move
-				this.animateMovement(direction, amount, newPosition, callback)
-				}
-				break;
-
-			case 'up':
-				//Calculate up most coordinate between start and end
-				var startY = currentPosition.startY;
-				var endY = currentPosition.endY;
-				var upMost;
-				var upMostVal;
-				(startY < endY) ? upMost = 'start' : upMost = 'end';
-				(startY < endY) ? upMostVal = startY: upMostVal = endY;
-
-				if ((upMostVal - amount) < 1) {
-					return {err: 'Invalid up move.'};
-				} else {
-
-					var newPosition = {
-						startX: currentPosition.startX,
-						endX: currentPosition.endX,
-						startY: 0,
-						endY: 0
-					}
-					if (upMost === 'start') {
-						newPosition.startY = upMostVal - amount;
-						newPosition.endY = endY - amount;
-					} else {
-						newPosition.endY = upMostVal - amount;
-						newPosition.startY = startY - amount;
-					}
-					
-
-					//Animate change in class and complete move
-					this.animateMovement(direction, amount, newPosition, callback)
-				}
-				break;
-			case 'down':
-				//Calculate down most coordinate between start and end
-				var startY = currentPosition.startY;
-				var endY = currentPosition.endY;
-				var downMost;
-				var downMostVal;
-				(startY > endY) ? downMost = 'start' : downMost = 'end';
-				(startY > endY) ? downMostVal = startY : downMostVal = endY;
-
-				if ((downMostVal + amount) > (Grid.SIZE+1)) {
-					return {err: 'Invalid down move.'};
-				} else {
-
-					var newPosition = {
-						startX: currentPosition.startX,
-						endX: currentPosition.endX,
-						startY: 0,
-						endY: 0
-					}
-					if (downMost === 'start') {
-						newPosition.startY = downMostVal + amount;
-						newPosition.endY = endY + amount;
-					} else {
-						newPosition.endY = downMostVal + amount;
-						newPosition.startY = startY + amount;
-					}
-					
-
-					//Animate change in class and complete move
-					this.animateMovement(direction, amount, newPosition, callback)
-				}
-				break;
-		}
+		this.animateMovement(direction, amount, callback)
 
 	}
 
-	animateMovement(direction, amount, newPosition, callback) {
+	animateMovement(direction, amount, callback) {
 
 		//use jquery animations to change position
 		var id = this.id;
-
-		this.currentPosition.startX = newPosition.startX;
-		this.currentPosition.startY = newPosition.startY;
-		this.currentPosition.endX = newPosition.endX;
-		this.currentPosition.endY = newPosition.endY;
 
 		var widthAmount = amount * $(".square").width();
 		var val;
 		switch (direction) {
 			case 'right':
-				val = "-="+widthAmount+"px";
+				direction = "left";
+				val = "+="+widthAmount+"px";
 				break;
 			case 'left':
 				val = "-="+widthAmount+"px";

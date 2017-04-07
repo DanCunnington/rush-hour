@@ -22,20 +22,15 @@ router.post('/solve', function(req,res,next) {
     };
 
     rushhour.search(startingState,function(solution) {
-    	for (var i=0; i<solution.length; i++) {
+    	// for (var i=0; i<solution.length; i++) {
     		
-    		for (var j=0; j<solution[i].grid.length; j++) {
-    			var line = "";
-    			for (var k=0; k<solution[i].grid[j].length; k++) {
-    				line += solution[i].grid[j][k] +" ";
-    			}
-    			console.log(line);
-    			console.log()
-    		}
-    		
-    		console.log('----')
-    		
-    	}
+    	// 	for (var j=0; j<solution[i].grid.length; j++) {
+    	// 		var line = "";
+    	// 		for (var k=0; k<solution[i].grid[j].length; k++) {
+    	// 			line += solution[i].grid[j][k] +" ";
+    	// 		}
+    	// 	}    		
+    	// }
 
 
         res.json({solution: solution});
