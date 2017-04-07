@@ -1,9 +1,13 @@
-//Faye client
-var client = new Faye.Client("http://localhost:8000/faye");
-
 $(document).ready(function() {
+    var grid = new Grid();
+    grid.initialise();
+
     
+
+
 });
+
+
 
 function solve() {
     var puzzle = '['+
