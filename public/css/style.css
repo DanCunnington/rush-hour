@@ -54,8 +54,9 @@
 
 .vehicle {
 	background-color: red;
-	height: 100%;
-	width: 100%;
+	height: calc(100% - 2px);
+	width: calc(100% - 2px);
+	position: relative;
 }
 
 

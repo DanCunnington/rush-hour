@@ -106,7 +106,7 @@ class Vehicle {
 					
 
 					//Animate change in class and complete move
-					this.animateMovement(newPosition)
+					this.animateMovement(direction, amount, newPosition)
 				}
 				break;
 			case 'left':
@@ -122,28 +122,30 @@ class Vehicle {
 					return {err: 'Invalid left move.'};
 				} else {
 
-					var newPosition = {
-						startX: 0,
-						endX: 0,
-						startY: currentPosition.startY,
-						endY: currentPosition.endY
-					}
-					if (leftMost === 'start') {
-						newPosition.startX = leftMostVal - amount;
-						newPosition.endX = endX - amount;
-					} else {
-						newPosition.endX = leftMostVal - amount;
-						newPosition.startX = startX - amount;
-					}
+
+
+				var newPosition = {
+					startX: 0,
+					endX: 0,
+					startY: currentPosition.startY,
+					endY: currentPosition.endY
+				}
+				if (leftMost === 'start') {
+					newPosition.startX = leftMostVal - amount;
+					newPosition.endX = endX - amount;
+				} else {
+					newPosition.endX = leftMostVal - amount;
+					newPosition.startX = startX - amount;
+				}
 					
 
-					//Animate change in class and complete move
-					this.animateMovement(newPosition)
+				//Animate change in class and complete move
+				this.animateMovement(direction, amount, newPosition)
 				}
 				break;
 
 			case 'up':
-				//Calculate left most coordinate between start and end
+				//Calculate up most coordinate between start and end
 				var startY = currentPosition.startY;
 				var endY = currentPosition.endY;
 				var upMost;
@@ -173,11 +175,11 @@ class Vehicle {
 					
 
 					//Animate change in class and complete move
-					this.animateMovement(newPosition)
+					this.animateMovement(direction, amount, newPosition)
 				}
 				break;
 			case 'down':
-				//Calculate left most coordinate between start and end
+				//Calculate down most coordinate between start and end
 				var startY = currentPosition.startY;
 				var endY = currentPosition.endY;
 				var downMost;
@@ -205,28 +207,46 @@ class Vehicle {
 					
 
 					//Animate change in class and complete move
-					this.animateMovement(newPosition)
+					this.animateMovement(direction, amount, newPosition)
 				}
 				break;
 		}
 
 	}
 
-	animateMovement(newPosition) {
+	animateMovement(direction, amount, newPosition) {
 		console.log('oioi');
 		console.log(newPosition);
-		//use jquery to change css property
+		//use jquery animations to change position
 		var id = this.id;
-		var newCol = newPosition.startX+"/"+newPosition.endX;
-		var newRow = newPosition.startY+"/"+newPosition.endY;
 
 		this.currentPosition.startX = newPosition.startX;
 		this.currentPosition.startY = newPosition.startY;
 		this.currentPosition.endX = newPosition.endX;
 		this.currentPosition.endY = newPosition.endY;
-			
-		$("#"+id).css('grid-column', newCol);
-		$("#"+id).css('grid-row', newRow);
+
+		var widthAmount = amount * $(".square").width();
+		var val;
+		switch (direction) {
+			case 'right':
+				val = "-="+widthAmount+"px";
+				break;
+			case 'left':
+				val = "-="+widthAmount+"px";
+				break;
+			case 'up':
+				direction = "top";
+				val = "-="+widthAmount+"px";
+				break;
+			case 'down':
+				direction = "top";
+				val = "+="+widthAmount+"px";
+				break;
+		}
+
+		var property = {};
+		property[direction] = val;
+		$("#"+id).animate(property, 1000);
 	}
 
 	
