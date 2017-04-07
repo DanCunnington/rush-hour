@@ -312,7 +312,6 @@ class Puzzle {
 			
 
 						var startsAt = [leftMost[1], leftMost[0]];
-						// console.log(id, startsAt);
 
 						//check for movement
 						if (startsAt[0] !== comparison[j].startsAt[0] || startsAt[1] !== comparison[j].startsAt[1]) {
@@ -335,8 +334,6 @@ class Puzzle {
 						
 
 						var startsAt = [topMost[1], topMost[0]];
-						// console.log(id, startsAt);
-
 						//check for movement
 						if (startsAt[0] !== comparison[j].startsAt[0] || startsAt[1] !== comparison[j].startsAt[1]) {
 							console.log('vehicle '+comparison[j].id+ ' has moved vertically');
@@ -351,16 +348,12 @@ class Puzzle {
 
 	
 		if (movements.length > 0) {
-			// console.log(movements);
 			//compare start and end
 			var xStart = movements[0].start[0];
 			var xEnd = movements[0].end[0];
 
 			var yStart = movements[0].start[1];
 			var yEnd = movements[0].end[1];
-
-			// console.log(xStart, yStart);
-			// console.log(xEnd, yEnd);
 
 			var direction;
 			if (xEnd > xStart) { direction = "right"};

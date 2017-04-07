@@ -105,7 +105,7 @@ class Vehicle {
 
 		var property = {};
 		property[direction] = val;
-		$("#"+id).animate(property, 1000, function() {
+		$("#"+id).animate(property, 500, function() {
 			callback();
 		});
 	}
