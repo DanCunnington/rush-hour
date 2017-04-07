@@ -1,10 +1,8 @@
 class Vehicle {
-	constructor(type) {
-		if (type === 'car' || type === 'redCar') { this.length = 2 };
-		if (type === 'lorry') { this.length = 3 };
-		this.size = 1;
-		this.type = type;
-		this.id = Date.now();
+	constructor(vehicle_id, length, colour) {
+		this.length = length;
+		this.id = "vehicle_"+vehicle_id;
+		this.colour = colour;
 		this.currentPosition = {};
 	}
 
@@ -44,7 +42,8 @@ class Vehicle {
 		//Create a new vehicle element with colour and correct image
 		//Set the css grid-column and grid-row properties to the correct positions
 		var styles = "grid-column: "+startX+"/"+endX+";"+
-					 "grid-row: "+startY+"/"+endY+";";
+					 "grid-row: "+startY+"/"+endY+";"+
+					 "background-color: "+this.colour+";"
 
 		$("#vehicles").append("<div id='"+this.id+"' class='vehicle' style='"+styles+"'></div>");
 	}
@@ -62,7 +61,7 @@ class Vehicle {
 	}
 
 	//Move a vehicle to new starting position
-	move(direction, amount) {
+	move(direction, amount, callback) {
 		//Check that this is a legal move, e.g. if vehicle has height 1 then it can only move sideways
 		//If vehicle has a width of 1 it can only move up and down
 		var currentPosition = this.currentPosition;
@@ -106,7 +105,7 @@ class Vehicle {
 					
 
 					//Animate change in class and complete move
-					this.animateMovement(direction, amount, newPosition)
+					this.animateMovement(direction, amount, newPosition, callback)
 				}
 				break;
 			case 'left':
@@ -140,7 +139,7 @@ class Vehicle {
 					
 
 				//Animate change in class and complete move
-				this.animateMovement(direction, amount, newPosition)
+				this.animateMovement(direction, amount, newPosition, callback)
 				}
 				break;
 
@@ -175,7 +174,7 @@ class Vehicle {
 					
 
 					//Animate change in class and complete move
-					this.animateMovement(direction, amount, newPosition)
+					this.animateMovement(direction, amount, newPosition, callback)
 				}
 				break;
 			case 'down':
@@ -207,14 +206,14 @@ class Vehicle {
 					
 
 					//Animate change in class and complete move
-					this.animateMovement(direction, amount, newPosition)
+					this.animateMovement(direction, amount, newPosition, callback)
 				}
 				break;
 		}
 
 	}
 
-	animateMovement(direction, amount, newPosition) {
+	animateMovement(direction, amount, newPosition, callback) {
 		console.log('oioi');
 		console.log(newPosition);
 		//use jquery animations to change position
@@ -246,7 +245,9 @@ class Vehicle {
 
 		var property = {};
 		property[direction] = val;
-		$("#"+id).animate(property, 1000);
+		$("#"+id).animate(property, 1000, function() {
+			callback();
+		});
 	}
 
 	
