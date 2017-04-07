@@ -32,7 +32,7 @@ class Vehicle {
 
 		//Check move was valid, i.e. check endX and endY lie within the board
 		if (endX <= (Grid.SIZE+1) && endX > 0 && endY <= (Grid.SIZE+1) && endY > 0) {
-			console.log('valid move');
+
 		} else {
 			return {err: "Invalid move - cannot display vehicle at this position"}
 		}
@@ -65,7 +65,6 @@ class Vehicle {
 		//Check that this is a legal move, e.g. if vehicle has height 1 then it can only move sideways
 		//If vehicle has a width of 1 it can only move up and down
 		var currentPosition = this.currentPosition;
-		console.log(currentPosition);
 
 		if ((direction === 'left' || direction === 'right') && currentPosition.orientation !== 'horizontal') {
 			return {err: 'Invalid move. Current position must be horizontal to move left or right'};
@@ -152,8 +151,6 @@ class Vehicle {
 				(startY < endY) ? upMost = 'start' : upMost = 'end';
 				(startY < endY) ? upMostVal = startY: upMostVal = endY;
 
-				console.log(upMostVal)
-
 				if ((upMostVal - amount) < 1) {
 					return {err: 'Invalid up move.'};
 				} else {
@@ -214,8 +211,7 @@ class Vehicle {
 	}
 
 	animateMovement(direction, amount, newPosition, callback) {
-		console.log('oioi');
-		console.log(newPosition);
+
 		//use jquery animations to change position
 		var id = this.id;
 

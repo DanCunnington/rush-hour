@@ -195,19 +195,24 @@ class Puzzle {
 		$.post('/solve', {'puzzle': JSON.stringify(that.setup)}, function(response) {
 		    var solution = response.solution;
 		    var animations = [];
-		    for (var i=0; i<solution.length; i++) {
-		    	(function(iteration) {
-		    		//For each solution step, work out which vehicle has moved, in which direction.
-		    		var movement = that.calculateVehicleMovement(solution[iteration].grid);
-		    		console.log(movement);
-		    	
-		    		if (movement) { animations.push(movement) };
-		    		
-		    	})(i);
-		        
-		    }
-		    console.log('done');
 
+		    var findMovement = function(index, callback) {
+		    	if (index === solution.length) {
+		    		return callback();
+		    	} else {
+		    		//For each solution step, work out which vehicle has moved, in which direction.
+		    		var movement = that.calculateVehicleMovement(solution[index].grid);
+		    		that.currentGrid = solution[index].grid;
+		    		
+		    		if (movement) { 
+		    			// console.log(movement);
+		    			animations.push(movement);
+		    		}
+		    		
+		    		findMovement(index+1, callback)
+		    	}
+		    }
+		    
 		    var runAnimation = function(index, callback) {
 		    	if (index === animations.length) {
 		    		return callback();
@@ -223,9 +228,12 @@ class Puzzle {
 		    		}
 		    	}
 		    }
-		    runAnimation(0, function() {
-		    	console.log('finished');
+		    findMovement(0, function() {
+		    	runAnimation(0, function() {
+		    		console.log('finished');
+		    	})
 		    })
+		    
 		});
 	}
 
@@ -237,60 +245,130 @@ class Puzzle {
 		var vehiclesInCurrentStep = this.findVehicles(this.currentGrid);
 		var vehiclesInNextStep = this.findVehicles(nextStep);
 
-		// console.log(vehiclesInCurrentStep[0]);
-		// console.log(vehiclesInNextStep[0]);
-
 		//compare vehicle coordinates and identify which vehicle has moved
 		var comparison = [];
+
 		for (var i=0; i<vehiclesInCurrentStep.length; i++) {
 			var id = vehiclesInCurrentStep[i].id;
 			var currentCoords = vehiclesInCurrentStep[i].coords;
-			comparison.push({id: id, currentCoords: currentCoords});			
+			var direction = vehiclesInCurrentStep[i].direction;
+			//take top left most coord as starting point
+			if (direction === 'horizontal') {
+				//take left most coord
+				var leftMostX = currentCoords[0][1];
+				var leftMost = currentCoords[0];
+
+				for (var j=1; j<currentCoords.length; j++) {
+					if (currentCoords[j][1] < leftMostX) {
+						leftMostX = currentCoords[j][1];
+						leftMost = currentCoords[j];
+					}
+				}
+				var startsAt = [leftMost[1], leftMost[0]];
+				comparison.push({id: id, startsAt: startsAt, direction: direction});	
+			} else {
+				//take top most coord
+				var topMostY = currentCoords[0][0];
+				var topMost = currentCoords[0];
+
+				for (var j=1; j<currentCoords.length; j++) {
+					if (currentCoords[j][0] < topMostY) {
+						topMostY = currentCoords[j][0];
+						topMost = currentCoords[j];
+					}
+				}
+
+				var startsAt = [topMost[1], topMost[0]];
+				comparison.push({id: id, startsAt: startsAt, direction: direction});
+			}
+					
 		}
+		
+		var movements = [];
 
 		for (var i=0; i<vehiclesInNextStep.length; i++) {
 			for (var j=0; j<comparison.length; j++) {
 				if (comparison[j].id === vehiclesInNextStep[i].id) {
-					comparison[j].nextCoords = vehiclesInNextStep[i].coords;
+
+					//check for movement in starting coord
+					var id = vehiclesInNextStep[i].id;
+					var nextCoords = vehiclesInNextStep[i].coords;
+					var direction = vehiclesInNextStep[i].direction;
+
+					//take top left most coord as starting point
+					if (direction === 'horizontal') {
+						//take left most coord
+						var leftMostX = nextCoords[0][1];
+						var leftMost = nextCoords[0];
+
+
+						for (var k=1; k<nextCoords.length; k++) {
+							if (nextCoords[k][1] < leftMostX) {
+								leftMostX = nextCoords[k][1];
+								leftMost = nextCoords[k];
+							}
+						}
+			
+
+						var startsAt = [leftMost[1], leftMost[0]];
+						// console.log(id, startsAt);
+
+						//check for movement
+						if (startsAt[0] !== comparison[j].startsAt[0] || startsAt[1] !== comparison[j].startsAt[1]) {
+							console.log('vehicle '+comparison[j].id+ ' has moved horizontally');
+							movements.push({id: comparison[j].id, start: comparison[j].startsAt, end: startsAt, direction: direction});
+
+						}
+					} else {
+						//take top most coord
+						var topMostY = nextCoords[0][0];
+						var topMost = nextCoords[0];
+
+
+						for (var k=1; k<nextCoords.length; k++) {
+							if (nextCoords[k][0] < topMostY) {
+								topMostY = nextCoords[k][0];
+								topMost = nextCoords[k];
+							}
+						}
+						
+
+						var startsAt = [topMost[1], topMost[0]];
+						// console.log(id, startsAt);
+
+						//check for movement
+						if (startsAt[0] !== comparison[j].startsAt[0] || startsAt[1] !== comparison[j].startsAt[1]) {
+							console.log('vehicle '+comparison[j].id+ ' has moved vertically');
+							movements.push({id: comparison[j].id, start: comparison[j].startsAt, end: startsAt, direction: direction});
+						}
+					}
 					break;
 				}
 			}
 		}
-
-		for (var i=0; i<comparison.length; i++) {
-			var currentCoords = comparison[i].currentCoords;
-			var nextCoords = comparison[i].nextCoords;
-			
-			var vehicleMovements = [];
-			for (var j=0; j<currentCoords.length; j++) {
-				if (currentCoords[j][0] !== nextCoords[j][0] || currentCoords[j][1] !== nextCoords[j][1]) {
-					vehicleMovements.push(nextCoords[j]);
-				}
-			}
-
-			
-			if (vehicleMovements.length > 0) {
-				//compare first and last movements
-				var first = vehicleMovements[0];
-				var last = vehicleMovements[vehicleMovements.length -1];
-				var xStart = first[1];
-				var xEnd = last[1];
-				var yStart = first[0];
-				var yEnd = last[0];
-
-				var direction;
-				if (xEnd > xStart) { direction = "left"};
-				if (xEnd < xStart) { direction = "right"};
-				if (yEnd > yStart) { direction = "down"};
-				if (yEnd < yStart) { direction = "up"};
-
-				//update grid;
-				this.currentGrid = nextStep;
-				return ({id: comparison[i].id, direction: direction});
-			}
-			
-			
 		
+
+	
+		if (movements.length > 0) {
+			// console.log(movements);
+			//compare start and end
+			var xStart = movements[0].start[0];
+			var xEnd = movements[0].end[0];
+
+			var yStart = movements[0].start[1];
+			var yEnd = movements[0].end[1];
+
+			console.log(xStart, yStart);
+			console.log(xEnd, yEnd);
+
+			var direction;
+			if (xEnd > xStart) { direction = "right"};
+			if (xEnd < xStart) { direction = "left"};
+			if (yEnd > yStart) { direction = "down"};
+			if (yEnd < yStart) { direction = "up"};
+			console.log(direction);
+			return ({id: movements[0].id, direction: direction});
 		}
 	}
+
 }
